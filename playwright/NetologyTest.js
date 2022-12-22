@@ -1,39 +1,41 @@
 const { chromium } = require("playwright");
-const user = require("../playwright/user");
-const { test, expect } = require("@playwright/test");
-
+const userFile = require('./user');
+let userName = userFile.userName;
+let passwordName = userFile.passwordName;
 (async () => {
-	const browser = await chromium.launch({
-		headless: false,
-		slowMo: 5000,
+  await page.screenshot({ path: 'screenshot.png' });
+  const browser = await chromium.launch({});
+  const page = await browser.newPage();
+  await page.goto("https://netology.ru/?modal=sign_in");
 
-	});
-	const page = await browser.newPage();
-	await page.goto("https://netology.ru/?modal=sign_in");
-	await page.fill('[placeholder="Email"]', user.email);
-	await page.fill('[placeholder="Пароль"]', user.pass);
-	await page.click("text=Войти");
+  await page.fill('[placeholder="Email"]', userName);
+  await page.fill('[placeholder="Пароль"]', passwordName);
+  await page.click('button:has-text("Войти")');
+  await expect(page).toHaveURL('https://netology.ru/profile');
+  await expect(page.locator('text = Мои курсы и профессии')).toBeVisible();
 
-	await expect(page).toHaveURL("https://netology.ru/profile");
-
-	await browser.close();
+  const check = await page.waitForSelector("text=Мои курсы и профессии");
+  await browser.close();
 })();
 
 (async () => {
-	const browser = await chromium.launch({
-		headless: false,
-		slowMo: 5000,
+  const browser = await chromium.launch({
 
-	});
-	const page = await browser.newPage();
-	await page.goto("https://netology.ru/?modal=sign_in");
-	await page.fill('[placeholder="Email"]', "user@email.com");
-	await page.fill('[placeholder="Пароль"]', "user.pass");
-	await page.click("text=Войти");
+  });
+  const page = await browser.newPage();
+  await page.goto("https://netology.ru/?modal=sign_in");
 
-	await expect(
-		page.locator("text=Вы ввели неправильно логин или пароль")
-	).toBeVisible();
+  const userNameEm = "test" + userName;
+  // Fill [placeholder="Email"]
+  await page.fill('[placeholder="Email"]', userNameEm);
+  // Fill [placeholder="Пароль"]
+  await page.fill('[placeholder="Пароль"]', passwordName);
+  await page.click('button:has-text("Войти")');
+  await expect(page).toHaveURL('https://netology.ru/?modal=sign_in');
+        await expect(
+            page.locator('text=Вы ввели неправильно логин или пароль')
+        ).toBeVisible();
 
-	await browser.close();
+  const check = await page.waitForSelector("text=Вы ввели неправильно логин или пароль");
+  await browser.close();
 })();
